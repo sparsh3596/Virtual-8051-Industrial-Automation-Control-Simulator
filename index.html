@@ -1,0 +1,2814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Virtual 8051 Industrial Automation Simulator</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Segoe UI,sans-serif;
+    background:#07111f;
+    color:#e8f0f8;
+}
+
+/* HEADER */
+
+header{
+    padding:20px 30px;
+    background:#0b1728;
+    border-bottom:1px solid #203954;
+}
+
+header h1{
+    margin:0;
+    font-size:24px;
+}
+
+header p{
+    margin:7px 0 0;
+    color:#8fa7bd;
+    font-size:13px;
+}
+
+/* MAIN LAYOUT */
+
+.container{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:15px;
+    padding:18px;
+}
+
+/* PANELS */
+
+.panel{
+    background:#0d1b2e;
+    border:1px solid #203954;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
+}
+
+.panel h2{
+    font-size:13px;
+    letter-spacing:1px;
+    margin-top:0;
+    color:#b9cee0;
+}
+
+/* CONTROL */
+
+.field{
+    margin-bottom:12px;
+}
+
+.field label{
+    display:block;
+    font-size:12px;
+    color:#9fb3c7;
+    margin-bottom:5px;
+}
+
+input,
+select{
+    width:100%;
+    padding:9px;
+    border-radius:6px;
+    border:1px solid #29445f;
+    background:#071524;
+    color:white;
+}
+
+/* BUTTONS */
+
+.buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:15px;
+}
+
+button{
+    padding:10px;
+    border:none;
+    border-radius:7px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.start{
+    background:#15803d;
+}
+
+.stop{
+    background:#b91c1c;
+}
+
+.reset{
+    background:#475569;
+}
+
+.export{
+    background:#075985;
+    grid-column:1/3;
+}
+
+button:hover{
+    filter:brightness(1.2);
+}
+
+/* STATUS */
+
+.statusGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.statusBox{
+    background:#081727;
+    border:1px solid #1b344d;
+    padding:10px;
+    border-radius:7px;
+}
+
+.statusName{
+    font-size:11px;
+    color:#8fa7bd;
+}
+
+.statusValue{
+    font-size:16px;
+    font-weight:bold;
+    margin-top:4px;
+}
+
+.ready{
+    color:#38bdf8;
+}
+
+.running{
+    color:#22c55e;
+}
+
+.stopped{
+    color:#ef4444;
+}
+
+/* TOP CARDS */
+
+.topCards{
+    display:grid;
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.topCard{
+    background:#0d1b2e;
+    border:1px solid #203954;
+    border-radius:10px;
+    padding:13px;
+}
+
+.topTitle{
+    color:#8fa7bd;
+    font-size:11px;
+}
+
+.topValue{
+    margin-top:5px;
+    font-size:21px;
+    font-weight:bold;
+}
+
+/* GRAPHS */
+
+.graphGrid{
+    display:grid;
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap:15px;
+}
+
+.graphPanel{
+    height:310px;
+}
+
+.graphTitle{
+    font-size:13px;
+    color:#cbdbea;
+    margin-bottom:8px;
+}
+
+canvas{
+    width:100%;
+    height:260px;
+}
+
+/* FOOTER */
+
+footer{
+    text-align:center;
+    padding:20px;
+    color:#71869a;
+    font-size:11px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1100px){
+
+    .container{
+        grid-template-columns:1fr;
+    }
+
+    .topCards{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:700px){
+
+    .graphGrid{
+        grid-template-columns:1fr;
+    }
+
+    .topCards{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>
+Virtual 8051 Industrial Automation & Control Simulator
+</h1>
+
+<p>
+Software-only closed-loop DC motor control system
+|
+Analog Sensor
+|
+10-bit ADC
+|
+PI/PID
+|
+PWM
+|
+Feedback Control
+</p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- =========================================================
+     LEFT SIDEBAR
+========================================================= -->
+
+<div>
+
+
+<!-- CONTROL PANEL -->
+
+<div class="panel">
+
+<h2>CONTROL PANEL</h2>
+
+
+<div class="field">
+
+<label>
+Plant
+</label>
+
+<select id="plant">
+
+<option>
+DC Motor
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Controller
+</label>
+
+<select id="controller">
+
+<option>P</option>
+
+<option selected>
+PI
+</option>
+
+<option>
+PID
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Setpoint (RPM)
+</label>
+
+<input
+id="setpoint"
+type="number"
+value="1500"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Kp
+</label>
+
+<input
+id="kp"
+type="number"
+step="0.0001"
+value="0.006"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Ki
+</label>
+
+<input
+id="ki"
+type="number"
+step="0.0001"
+value="0.0042"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Kd
+</label>
+
+<input
+id="kd"
+type="number"
+step="0.00001"
+value="0"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Normal Load (Nm)
+</label>
+
+<input
+id="load"
+type="number"
+step="0.01"
+value="0.05"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Load Disturbance Time (s)
+</label>
+
+<input
+id="disturbance"
+type="number"
+step="0.5"
+value="8"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Simulation Time (s)
+</label>
+
+<input
+id="simTime"
+type="number"
+value="15"
+>
+
+</div>
+
+
+<div class="buttons">
+
+<button
+class="start"
+id="start">
+START
+</button>
+
+
+<button
+class="stop"
+id="stop">
+STOP
+</button>
+
+
+<button
+class="reset"
+id="reset">
+RESET
+</button>
+
+
+<button
+class="export"
+id="export">
+EXPORT CSV
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     8051 STATUS
+========================================================= -->
+
+<div class="panel">
+
+<h2>
+VIRTUAL 8051 STATUS
+</h2>
+
+
+<div class="statusGrid">
+
+
+<div class="statusBox">
+
+<div class="statusName">
+ADC VALUE
+</div>
+
+<div
+class="statusValue"
+id="adc">
+0
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+SENSOR
+</div>
+
+<div
+class="statusValue"
+id="sensor">
+0.000 V
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+PWM
+</div>
+
+<div
+class="statusValue"
+id="pwm">
+0.00 %
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+MOTOR SPEED
+</div>
+
+<div
+class="statusValue"
+id="rpm">
+0 RPM
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+CURRENT
+</div>
+
+<div
+class="statusValue"
+id="current">
+0.00 A
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+CONTROL ERROR
+</div>
+
+<div
+class="statusValue"
+id="error">
+0 RPM
+</div>
+
+</div>
+
+
+<div
+class="statusBox"
+style="grid-column:1/3"
+>
+
+<div class="statusName">
+SYSTEM STATUS
+</div>
+
+<div
+class="statusValue ready"
+id="status">
+READY
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     PERFORMANCE
+========================================================= -->
+
+<div class="panel">
+
+<h2>
+PERFORMANCE
+</h2>
+
+
+<div class="statusGrid">
+
+
+<div class="statusBox">
+
+<div class="statusName">
+RISE TIME
+</div>
+
+<div
+class="statusValue"
+id="rise">
+--
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+OVERSHOOT
+</div>
+
+<div
+class="statusValue"
+id="overshoot">
+--
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+STEADY STATE ERROR
+</div>
+
+<div
+class="statusValue"
+id="sse">
+--
+</div>
+
+</div>
+
+
+<div class="statusBox">
+
+<div class="statusName">
+RECOVERY
+</div>
+
+<div
+class="statusValue"
+id="recovery">
+--
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     RIGHT SIDE
+========================================================= -->
+
+<div>
+
+
+<!-- TOP CARDS -->
+
+<div class="topCards">
+
+
+<div class="topCard">
+
+<div class="topTitle">
+SETPOINT
+</div>
+
+<div
+class="topValue"
+id="topSetpoint">
+1500 RPM
+</div>
+
+</div>
+
+
+<div class="topCard">
+
+<div class="topTitle">
+LIVE SPEED
+</div>
+
+<div
+class="topValue"
+id="topRPM">
+0 RPM
+</div>
+
+</div>
+
+
+<div class="topCard">
+
+<div class="topTitle">
+PWM OUTPUT
+</div>
+
+<div
+class="topValue"
+id="topPWM">
+0 %
+</div>
+
+</div>
+
+
+<div class="topCard">
+
+<div class="topTitle">
+10-BIT ADC
+</div>
+
+<div
+class="topValue"
+id="topADC">
+0 / 1023
+</div>
+
+</div>
+
+
+</div>
+
+
+<!-- =========================================================
+     GRAPHS
+========================================================= -->
+
+<div class="graphGrid">
+
+
+<div class="panel graphPanel">
+
+<div class="graphTitle">
+1. CLOSED-LOOP SPEED RESPONSE
+</div>
+
+<canvas
+id="speedChart">
+</canvas>
+
+</div>
+
+
+<div class="panel graphPanel">
+
+<div class="graphTitle">
+2. VIRTUAL 8051 PWM OUTPUT
+</div>
+
+<canvas
+id="pwmChart">
+</canvas>
+
+</div>
+
+
+<div class="panel graphPanel">
+
+<div class="graphTitle">
+3. DC MOTOR ARMATURE CURRENT
+</div>
+
+<canvas
+id="currentChart">
+</canvas>
+
+</div>
+
+
+<div class="panel graphPanel">
+
+<div class="graphTitle">
+4. CLOSED-LOOP CONTROL ERROR
+</div>
+
+<canvas
+id="errorChart">
+</canvas>
+
+</div>
+
+
+<div class="panel graphPanel">
+
+<div class="graphTitle">
+5. ANALOG SENSOR → FILTER → ADC
+</div>
+
+<canvas
+id="sensorChart">
+</canvas>
+
+</div>
+
+
+<div class="panel graphPanel">
+
+<div class="graphTitle">
+6. MOTOR LOAD DISTURBANCE
+</div>
+
+<canvas
+id="loadChart">
+</canvas>
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+<footer>
+
+Virtual 8051 Industrial Automation Simulator
+|
+Educational Software Project
+|
+MATLAB-inspired web implementation
+
+</footer>
+
+
+<script>
+
+/* ============================================================
+   HELPER
+============================================================ */
+
+function $(id){
+
+    return document.getElementById(id);
+
+}
+
+
+/* ============================================================
+   PARAMETERS
+============================================================ */
+
+function getParameters(){
+
+    return {
+
+        setpoint:
+            Number($("setpoint").value),
+
+        kp:
+            Number($("kp").value),
+
+        ki:
+            Number($("ki").value),
+
+        kd:
+            Number($("kd").value),
+
+        load:
+            Number($("load").value),
+
+        disturbance:
+            Number($("disturbance").value),
+
+        simTime:
+            Number($("simTime").value),
+
+        controller:
+            $("controller").value
+
+    };
+
+}
+
+
+/* ============================================================
+   SIMULATION
+============================================================ */
+
+function simulate(p){
+
+    const dt = 0.001;
+
+    const N =
+        Math.floor(p.simTime/dt)+1;
+
+
+    /*
+       DC MOTOR PARAMETERS
+    */
+
+    const R = 1.0;
+
+    const L = 0.03;
+
+    const Ke = 0.03;
+
+    const Kt = 0.03;
+
+    const J = 0.002;
+
+    const B = 0.0002;
+
+
+    /*
+       SENSOR / ADC
+    */
+
+    const Vref = 5;
+
+    const maxRPM = 3000;
+
+    const maxADC = 1023;
+
+    const alpha = 0.08;
+
+
+    /*
+       ARRAYS
+    */
+
+    const time = [];
+
+    const speed = [];
+
+    const pwm = [];
+
+    const current = [];
+
+    const error = [];
+
+    const sensor = [];
+
+    const filteredSensor = [];
+
+    const adc = [];
+
+    const load = [];
+
+
+    /*
+       INITIAL CONDITIONS
+    */
+
+    let omega = 0;
+
+    let motorCurrent = 0;
+
+    let integral = 0;
+
+    let previousError = 0;
+
+    let previousFiltered = 0;
+
+
+    /*
+       SIMULATION LOOP
+    */
+
+    for(let k=0;k<N;k++){
+
+        const t = k*dt;
+
+
+        time.push(t);
+
+
+        /*
+           LOAD
+        */
+
+        let loadTorque;
+
+        if(
+            t < p.disturbance
+        ){
+
+            loadTorque =
+                p.load;
+
+        }
+
+        else{
+
+            loadTorque =
+                p.load*2;
+
+        }
+
+
+        load.push(loadTorque);
+
+
+        /*
+           MOTOR SPEED
+        */
+
+        let rpm =
+            omega*60/(2*Math.PI);
+
+
+        speed.push(rpm);
+
+
+        /*
+           ANALOG SENSOR
+        */
+
+        let sensorVoltage =
+            (rpm/maxRPM)*Vref;
+
+
+        sensorVoltage +=
+            0.001*
+            (Math.random()-0.5);
+
+
+        sensorVoltage =
+            Math.max(
+                0,
+                Math.min(
+                    Vref,
+                    sensorVoltage
+                )
+            );
+
+
+        sensor.push(sensorVoltage);
+
+
+        /*
+           SIGNAL CONDITIONING
+        */
+
+        let filtered =
+            alpha*sensorVoltage
+            +
+            (1-alpha)*previousFiltered;
+
+
+        previousFiltered =
+            filtered;
+
+
+        filteredSensor.push(
+            filtered
+        );
+
+
+        /*
+           VIRTUAL ADC
+        */
+
+        let adcValue =
+            Math.round(
+                (filtered/Vref)
+                *
+                maxADC
+            );
+
+
+        adcValue =
+            Math.max(
+                0,
+                Math.min(
+                    maxADC,
+                    adcValue
+                )
+            );
+
+
+        adc.push(adcValue);
+
+
+        /*
+           ADC TO RPM
+        */
+
+        let measuredRPM =
+            (adcValue/maxADC)
+            *
+            maxRPM;
+
+
+        /*
+           CONTROL ERROR
+        */
+
+        let e =
+            p.setpoint
+            -
+            measuredRPM;
+
+
+        error.push(e);
+
+
+        /*
+           DERIVATIVE
+        */
+
+        let derivative =
+            (e-previousError)/dt;
+
+
+        /*
+           CONTROLLER
+        */
+
+        let control = 0;
+
+
+        if(
+            p.controller === "P"
+        ){
+
+            control =
+                p.kp*e;
+
+        }
+
+
+        else if(
+            p.controller === "PI"
+        ){
+
+            control =
+                p.kp*e
+                +
+                p.ki*integral;
+
+        }
+
+
+        else{
+
+            control =
+                p.kp*e
+                +
+                p.ki*integral
+                +
+                p.kd*derivative;
+
+        }
+
+
+        /*
+           ANTI WINDUP
+        */
+
+        if(
+
+            (control < 12 && e > 0)
+
+            ||
+
+            (control > 0 && e < 0)
+
+        ){
+
+            integral +=
+                e*dt;
+
+        }
+
+
+        /*
+           CONTROLLER AGAIN
+        */
+
+        if(
+            p.controller === "P"
+        ){
+
+            control =
+                p.kp*e;
+
+        }
+
+        else if(
+            p.controller === "PI"
+        ){
+
+            control =
+                p.kp*e
+                +
+                p.ki*integral;
+
+        }
+
+        else{
+
+            control =
+                p.kp*e
+                +
+                p.ki*integral
+                +
+                p.kd*derivative;
+
+        }
+
+
+        /*
+           LIMIT CONTROL
+        */
+
+        control =
+            Math.max(
+                0,
+                Math.min(
+                    12,
+                    control
+                )
+            );
+
+
+        /*
+           PWM
+        */
+
+        let pwmValue =
+            control/12*100;
+
+
+        pwm.push(
+            pwmValue
+        );
+
+
+        /*
+           MOTOR ELECTRICAL MODEL
+        */
+
+        const backEMF =
+            Ke*omega;
+
+
+        const di_dt =
+            (
+                control
+                -
+                R*motorCurrent
+                -
+                backEMF
+            )
+            /
+            L;
+
+
+        motorCurrent +=
+            di_dt*dt;
+
+
+        /*
+           MOTOR TORQUE
+        */
+
+        const motorTorque =
+            Kt*motorCurrent;
+
+
+        /*
+           MECHANICAL EQUATION
+        */
+
+        const domega =
+            (
+                motorTorque
+                -
+                loadTorque
+                -
+                B*omega
+            )
+            /
+            J;
+
+
+        omega +=
+            domega*dt;
+
+
+        /*
+           NO NEGATIVE SPEED
+        */
+
+        if(
+            omega < 0
+        ){
+
+            omega = 0;
+
+        }
+
+
+        current.push(
+            motorCurrent
+        );
+
+
+        previousError =
+            e;
+
+    }
+
+
+    return {
+
+        time,
+        speed,
+        pwm,
+        current,
+        error,
+        sensor,
+        filteredSensor,
+        adc,
+        load
+
+    };
+
+}
+
+
+/* ============================================================
+   CANVAS
+============================================================ */
+
+function resizeCanvas(canvas){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+
+    const dpr =
+        window.devicePixelRatio || 1;
+
+
+    canvas.width =
+        rect.width*dpr;
+
+
+    canvas.height =
+        rect.height*dpr;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    ctx.scale(
+        dpr,
+        dpr
+    );
+
+}
+
+
+/* ============================================================
+   DRAW GRAPH
+============================================================ */
+
+function drawGraph(
+    canvas,
+    x,
+    series,
+    options={}
+){
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    const width =
+        canvas.clientWidth;
+
+
+    const height =
+        canvas.clientHeight;
+
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    if(
+        x.length < 2
+    ){
+
+        return;
+
+    }
+
+
+    const marginLeft = 48;
+
+    const marginRight = 15;
+
+    const marginTop = 15;
+
+    const marginBottom = 30;
+
+
+    const graphWidth =
+        width
+        -
+        marginLeft
+        -
+        marginRight;
+
+
+    const graphHeight =
+        height
+        -
+        marginTop
+        -
+        marginBottom;
+
+
+    /*
+       FIND RANGE
+    */
+
+    let minY =
+        options.minY;
+
+
+    let maxY =
+        options.maxY;
+
+
+    if(
+        minY === undefined
+        ||
+        maxY === undefined
+    ){
+
+        let values=[];
+
+
+        series.forEach(
+            s =>
+            values =
+                values.concat(
+                    s.data
+                )
+        );
+
+
+        minY =
+            Math.min(...values);
+
+
+        maxY =
+            Math.max(...values);
+
+
+        if(
+            minY === maxY
+        ){
+
+            minY -= 1;
+
+            maxY += 1;
+
+        }
+
+
+        const margin =
+            (maxY-minY)*0.1;
+
+
+        minY -= margin;
+
+        maxY += margin;
+
+    }
+
+
+    /*
+       GRID
+    */
+
+    ctx.strokeStyle =
+        "#1c334b";
+
+
+    ctx.lineWidth = 1;
+
+
+    ctx.fillStyle =
+        "#7f96aa";
+
+
+    ctx.font =
+        "10px Arial";
+
+
+    for(
+        let i=0;
+        i<=4;
+        i++
+    ){
+
+        const y =
+            marginTop
+            +
+            graphHeight
+            -
+            i/4*graphHeight;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            marginLeft,
+            y
+        );
+
+        ctx.lineTo(
+            marginLeft+graphWidth,
+            y
+        );
+
+        ctx.stroke();
+
+
+        const value =
+            minY
+            +
+            i/4*(maxY-minY);
+
+
+        ctx.fillText(
+            value.toFixed(0),
+            5,
+            y+3
+        );
+
+    }
+
+
+    /*
+       X GRID
+    */
+
+    for(
+        let i=0;
+        i<=5;
+        i++
+    ){
+
+        const xPos =
+            marginLeft
+            +
+            i/5*graphWidth;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            xPos,
+            marginTop
+        );
+
+        ctx.lineTo(
+            xPos,
+            marginTop+graphHeight
+        );
+
+        ctx.stroke();
+
+
+        const value =
+            x[
+                Math.floor(
+                    i/5*(x.length-1)
+                )
+            ];
+
+
+        ctx.fillText(
+            value.toFixed(1),
+            xPos-10,
+            height-8
+        );
+
+    }
+
+
+    /*
+       BORDER
+    */
+
+    ctx.strokeStyle =
+        "#304c66";
+
+
+    ctx.strokeRect(
+        marginLeft,
+        marginTop,
+        graphWidth,
+        graphHeight
+    );
+
+
+    /*
+       PLOT SERIES
+    */
+
+    series.forEach(
+        s => {
+
+            ctx.strokeStyle =
+                s.color;
+
+
+            ctx.lineWidth =
+                s.width || 2;
+
+
+            if(
+                s.dash
+            ){
+
+                ctx.setLineDash(
+                    [7,5]
+                );
+
+            }
+
+            else{
+
+                ctx.setLineDash([]);
+
+            }
+
+
+            ctx.beginPath();
+
+
+            for(
+                let i=0;
+                i<x.length;
+                i++
+            ){
+
+                const px =
+                    marginLeft
+                    +
+                    (
+                        x[i]
+                        -
+                        x[0]
+                    )
+                    /
+                    (
+                        x[x.length-1]
+                        -
+                        x[0]
+                    )
+                    *
+                    graphWidth;
+
+
+                const py =
+                    marginTop
+                    +
+                    graphHeight
+                    -
+                    (
+                        s.data[i]
+                        -
+                        minY
+                    )
+                    /
+                    (
+                        maxY-minY
+                    )
+                    *
+                    graphHeight;
+
+
+                if(
+                    i===0
+                ){
+
+                    ctx.moveTo(
+                        px,
+                        py
+                    );
+
+                }
+
+                else{
+
+                    ctx.lineTo(
+                        px,
+                        py
+                    );
+
+                }
+
+            }
+
+
+            ctx.stroke();
+
+
+            ctx.setLineDash([]);
+
+        }
+    );
+
+
+    /*
+       DISTURBANCE LINE
+    */
+
+    if(
+        options.disturbance !== undefined
+    ){
+
+        const disturbance =
+            options.disturbance;
+
+
+        const px =
+            marginLeft
+            +
+            disturbance
+            /
+            x[x.length-1]
+            *
+            graphWidth;
+
+
+        ctx.strokeStyle =
+            "#94a3b8";
+
+
+        ctx.setLineDash(
+            [6,5]
+        );
+
+
+        ctx.beginPath();
+
+
+        ctx.moveTo(
+            px,
+            marginTop
+        );
+
+
+        ctx.lineTo(
+            px,
+            marginTop+graphHeight
+        );
+
+
+        ctx.stroke();
+
+
+        ctx.setLineDash([]);
+
+    }
+
+}
+
+
+/* ============================================================
+   DRAW ALL
+============================================================ */
+
+function drawAll(
+    data,
+    count,
+    p
+){
+
+    if(!data)
+        return;
+
+
+    const x =
+        data.time.slice(
+            0,
+            count
+        );
+
+
+    const speed =
+        data.speed.slice(
+            0,
+            count
+        );
+
+
+    const pwm =
+        data.pwm.slice(
+            0,
+            count
+        );
+
+
+    const current =
+        data.current.slice(
+            0,
+            count
+        );
+
+
+    const error =
+        data.error.slice(
+            0,
+            count
+        );
+
+
+    const sensor =
+        data.sensor.slice(
+            0,
+            count
+        );
+
+
+    const filtered =
+        data.filteredSensor.slice(
+            0,
+            count
+        );
+
+
+    const load =
+        data.load.slice(
+            0,
+            count
+        );
+
+
+    drawGraph(
+        $("speedChart"),
+        x,
+        [
+            {
+                data:speed,
+                color:"#38bdf8"
+            },
+
+            {
+                data:x.map(
+                    () =>
+                    p.setpoint
+                ),
+                color:"#f59e0b",
+                dash:true
+            }
+        ],
+        {
+            minY:0,
+            maxY:
+                Math.max(
+                    1600,
+                    p.setpoint*1.1
+                ),
+
+            disturbance:
+                p.disturbance
+        }
+    );
+
+
+    drawGraph(
+        $("pwmChart"),
+        x,
+        [
+            {
+                data:pwm,
+                color:"#22d3ee"
+            }
+        ],
+        {
+            minY:0,
+            maxY:100,
+
+            disturbance:
+                p.disturbance
+        }
+    );
+
+
+    drawGraph(
+        $("currentChart"),
+        x,
+        [
+            {
+                data:current,
+                color:"#22c55e"
+            }
+        ],
+        {
+            minY:0,
+
+            maxY:
+                Math.max(
+                    5,
+                    ...current
+                )*1.15,
+
+            disturbance:
+                p.disturbance
+        }
+    );
+
+
+    drawGraph(
+        $("errorChart"),
+        x,
+        [
+            {
+                data:error,
+                color:"#fb7185"
+            }
+        ],
+        {
+            disturbance:
+                p.disturbance
+        }
+    );
+
+
+    drawGraph(
+        $("sensorChart"),
+        x,
+        [
+            {
+                data:sensor,
+                color:"#38bdf8"
+            },
+
+            {
+                data:filtered,
+                color:"#a78bfa",
+                dash:true
+            }
+        ],
+        {
+            minY:0,
+            maxY:5,
+
+            disturbance:
+                p.disturbance
+        }
+    );
+
+
+    drawGraph(
+        $("loadChart"),
+        x,
+        [
+            {
+                data:load,
+                color:"#f59e0b"
+            }
+        ],
+        {
+            minY:0,
+
+            maxY:
+                Math.max(...load)*1.25,
+
+            disturbance:
+                p.disturbance
+        }
+    );
+
+}
+
+
+/* ============================================================
+   PERFORMANCE
+============================================================ */
+
+function calculatePerformance(
+    data,
+    p
+){
+
+    const finalSpeed =
+        data.speed[
+            data.speed.length-1
+        ];
+
+
+    const maximum =
+        Math.max(
+            ...data.speed
+        );
+
+
+    const steadyError =
+        Math.abs(
+            p.setpoint
+            -
+            finalSpeed
+        );
+
+
+    let overshoot=0;
+
+
+    if(
+        maximum >
+        p.setpoint
+    ){
+
+        overshoot =
+            (
+                maximum-p.setpoint
+            )
+            /
+            p.setpoint
+            *
+            100;
+
+    }
+
+
+    /*
+       RISE TIME
+    */
+
+    let index10=-1;
+
+    let index90=-1;
+
+
+    for(
+        let i=0;
+        i<data.speed.length;
+        i++
+    ){
+
+        if(
+            index10<0
+            &&
+            data.speed[i]
+            >=
+            0.1*p.setpoint
+        ){
+
+            index10=i;
+
+        }
+
+
+        if(
+            index90<0
+            &&
+            data.speed[i]
+            >=
+            0.9*p.setpoint
+        ){
+
+            index90=i;
+
+        }
+
+    }
+
+
+    let riseTime=NaN;
+
+
+    if(
+        index10>=0
+        &&
+        index90>=0
+    ){
+
+        riseTime =
+            data.time[index90]
+            -
+            data.time[index10];
+
+    }
+
+
+    /*
+       RECOVERY TIME
+    */
+
+    const tolerance =
+        0.02*p.setpoint;
+
+
+    let start =
+        data.time.findIndex(
+            t =>
+            t>=p.disturbance
+        );
+
+
+    let lastOutside=-1;
+
+
+    for(
+        let i=start;
+        i<data.speed.length;
+        i++
+    ){
+
+        if(
+            Math.abs(
+                data.speed[i]
+                -
+                p.setpoint
+            )
+            >
+            tolerance
+        ){
+
+            lastOutside=i;
+
+        }
+
+    }
+
+
+    let recovery=NaN;
+
+
+    if(
+        lastOutside>=0
+        &&
+        lastOutside+1<
+        data.time.length
+    ){
+
+        recovery =
+            data.time[
+                lastOutside+1
+            ];
+
+    }
+
+
+    return {
+
+        finalSpeed,
+
+        steadyError,
+
+        maximum,
+
+        overshoot,
+
+        riseTime,
+
+        recovery
+
+    };
+
+}
+
+
+/* ============================================================
+   UPDATE STATUS
+============================================================ */
+
+function updateStatus(
+    data,
+    index,
+    p
+){
+
+    const rpm =
+        data.speed[index];
+
+
+    const pwm =
+        data.pwm[index];
+
+
+    const adc =
+        data.adc[index];
+
+
+    const sensor =
+        data.filteredSensor[index];
+
+
+    const current =
+        data.current[index];
+
+
+    const error =
+        data.error[index];
+
+
+    $("adc").textContent =
+        Math.round(adc);
+
+
+    $("sensor").textContent =
+        sensor.toFixed(3)
+        +
+        " V";
+
+
+    $("pwm").textContent =
+        pwm.toFixed(2)
+        +
+        " %";
+
+
+    $("rpm").textContent =
+        rpm.toFixed(2)
+        +
+        " RPM";
+
+
+    $("current").textContent =
+        current.toFixed(2)
+        +
+        " A";
+
+
+    $("error").textContent =
+        error.toFixed(2)
+        +
+        " RPM";
+
+
+    $("topSetpoint").textContent =
+        p.setpoint
+        +
+        " RPM";
+
+
+    $("topRPM").textContent =
+        rpm.toFixed(0)
+        +
+        " RPM";
+
+
+    $("topPWM").textContent =
+        pwm.toFixed(1)
+        +
+        "%";
+
+
+    $("topADC").textContent =
+        Math.round(adc)
+        +
+        " / 1023";
+
+}
+
+
+/* ============================================================
+   GLOBAL STATE
+============================================================ */
+
+let simulationData =
+    null;
+
+
+let simulationRunning =
+    false;
+
+
+let animationID =
+    null;
+
+
+/* ============================================================
+   START
+============================================================ */
+
+$("start").onclick =
+function(){
+
+    if(
+        simulationRunning
+    ){
+
+        return;
+
+    }
+
+
+    const p =
+        getParameters();
+
+
+    if(
+        p.setpoint<=0
+    ){
+
+        alert(
+            "Setpoint must be greater than zero."
+        );
+
+        return;
+
+    }
+
+
+    if(
+        p.simTime<=p.disturbance
+    ){
+
+        alert(
+            "Simulation time must be greater than disturbance time."
+        );
+
+        return;
+
+    }
+
+
+    simulationData =
+        simulate(p);
+
+
+    simulationRunning =
+        true;
+
+
+    $("status").textContent =
+        "RUNNING";
+
+
+    $("status").className =
+        "statusValue running";
+
+
+    let index=0;
+
+
+    function animate(){
+
+        if(
+            !simulationRunning
+        ){
+
+            return;
+
+        }
+
+
+        index += 30;
+
+
+        if(
+            index >=
+            simulationData.time.length
+        ){
+
+            index =
+                simulationData.time.length-1;
+
+
+            simulationRunning =
+                false;
+
+
+            drawAll(
+                simulationData,
+                index+1,
+                p
+            );
+
+
+            updateStatus(
+                simulationData,
+                index,
+                p
+            );
+
+
+            const result =
+                calculatePerformance(
+                    simulationData,
+                    p
+                );
+
+
+            /*
+               PERFORMANCE
+            */
+
+            $("rise").textContent =
+                isNaN(result.riseTime)
+                ?
+                "N/A"
+                :
+                result.riseTime.toFixed(3)
+                +
+                " s";
+
+
+            $("overshoot").textContent =
+                result.overshoot.toFixed(2)
+                +
+                " %";
+
+
+            $("sse").textContent =
+                result.steadyError.toFixed(2)
+                +
+                " RPM";
+
+
+            $("recovery").textContent =
+                isNaN(result.recovery)
+                ?
+                "N/A"
+                :
+                result.recovery.toFixed(3)
+                +
+                " s";
+
+
+            $("status").textContent =
+                "SIMULATION COMPLETE";
+
+
+            $("status").className =
+                "statusValue running";
+
+
+            return;
+
+        }
+
+
+        drawAll(
+            simulationData,
+            index,
+            p
+        );
+
+
+        updateStatus(
+            simulationData,
+            index-1,
+            p
+        );
+
+
+        animationID =
+            requestAnimationFrame(
+                animate
+            );
+
+    }
+
+
+    animate();
+
+};
+
+
+/* ============================================================
+   STOP
+============================================================ */
+
+$("stop").onclick =
+function(){
+
+    simulationRunning =
+        false;
+
+
+    if(
+        animationID
+    ){
+
+        cancelAnimationFrame(
+            animationID
+        );
+
+    }
+
+
+    $("status").textContent =
+        "STOPPED";
+
+
+    $("status").className =
+        "statusValue stopped";
+
+};
+
+
+/* ============================================================
+   RESET
+============================================================ */
+
+$("reset").onclick =
+function(){
+
+    simulationRunning =
+        false;
+
+
+    simulationData =
+        null;
+
+
+    if(
+        animationID
+    ){
+
+        cancelAnimationFrame(
+            animationID
+        );
+
+    }
+
+
+    $("adc").textContent =
+        "0";
+
+
+    $("sensor").textContent =
+        "0.000 V";
+
+
+    $("pwm").textContent =
+        "0.00 %";
+
+
+    $("rpm").textContent =
+        "0 RPM";
+
+
+    $("current").textContent =
+        "0.00 A";
+
+
+    $("error").textContent =
+        "0 RPM";
+
+
+    $("topRPM").textContent =
+        "0 RPM";
+
+
+    $("topPWM").textContent =
+        "0 %";
+
+
+    $("topADC").textContent =
+        "0 / 1023";
+
+
+    $("rise").textContent =
+        "--";
+
+
+    $("overshoot").textContent =
+        "--";
+
+
+    $("sse").textContent =
+        "--";
+
+
+    $("recovery").textContent =
+        "--";
+
+
+    $("status").textContent =
+        "READY";
+
+
+    $("status").className =
+        "statusValue ready";
+
+
+    document
+        .querySelectorAll("canvas")
+        .forEach(
+            canvas => {
+
+                const ctx =
+                    canvas.getContext("2d");
+
+                ctx.clearRect(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+            }
+        );
+
+};
+
+
+/* ============================================================
+   EXPORT CSV
+============================================================ */
+
+$("export").onclick =
+function(){
+
+    if(
+        !simulationData
+    ){
+
+        alert(
+            "Run the simulation first."
+        );
+
+        return;
+
+    }
+
+
+    let csv =
+        "Time_s,"
+        +
+        "Speed_RPM,"
+        +
+        "PWM_percent,"
+        +
+        "Current_A,"
+        +
+        "Error_RPM,"
+        +
+        "Sensor_V,"
+        +
+        "FilteredSensor_V,"
+        +
+        "ADC,"
+        +
+        "Load_Nm\n";
+
+
+    for(
+        let i=0;
+        i<simulationData.time.length;
+        i++
+    ){
+
+        csv +=
+
+            simulationData.time[i]
+            +
+            ","
+            +
+            simulationData.speed[i]
+            +
+            ","
+            +
+            simulationData.pwm[i]
+            +
+            ","
+            +
+            simulationData.current[i]
+            +
+            ","
+            +
+            simulationData.error[i]
+            +
+            ","
+            +
+            simulationData.sensor[i]
+            +
+            ","
+            +
+            simulationData.filteredSensor[i]
+            +
+            ","
+            +
+            simulationData.adc[i]
+            +
+            ","
+            +
+            simulationData.load[i]
+            +
+            "\n";
+
+    }
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                "text/csv"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        "Virtual8051_Simulation.csv";
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+};
+
+
+/* ============================================================
+   RESIZE
+============================================================ */
+
+function resizeAll(){
+
+    document
+        .querySelectorAll("canvas")
+        .forEach(
+            resizeCanvas
+        );
+
+}
+
+
+window.addEventListener(
+    "resize",
+    resizeAll
+);
+
+
+window.addEventListener(
+    "load",
+    resizeAll
+);
+
+</script>
+
+</body>
+
+</html>
