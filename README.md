@@ -97,14 +97,7 @@ Virtual8051-Industrial-Automation/
     └── screenshots/
 ```
 
-## 🔮 Future Improvements
 
-* Add more 8051 peripheral simulations
-* Add temperature and pressure sensor models
-* Add automatic controller tuning
-* Add additional motor models
-* Add data logging and report generation
-* Improve real-time simulation visualization
 
 ## 👨‍💻 Author
 
